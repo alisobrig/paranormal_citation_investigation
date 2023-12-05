@@ -1,0 +1,81 @@
+library(tidyverse)
+library(janitor)
+library(bibliometrix)
+
+para <- "data/paranormal_investigation.bib"
+
+df_para <- convert2df(file = para,
+                      dbsource = "wos",
+                      format = "bibtex")
+#writing data
+write_rds(df_para, "data/para_comb.rds")
+library(bib2df)
+df2bib(df_para, "data/para_comb.bib")
+write_csv(df_para, "data/para_comb.csv")
+
+# run a stock analysis (generates a list of dataframes)
+results <- biblioAnalysis(df_para, sep = ";")
+options(width=100)
+S <- summary(object = results, k = 10, pause = FALSE)
+
+# Top 50 cited documents and authors
+CR <- citations(df_para, field = "article", sep = ";")
+cbind(CR$Cited[1:5])
+CR <- citations(df_para, field = "author", sep = ";")
+cbind(CR$Cited[1:5])
+
+#top locally cited documents and authors
+CR <- localCitations(df_para, sep = ";")
+CR$Authors[1:5, ]
+CR$Papers[1:5,]
+
+
+# Co-citaiton analyses
+
+NetMatrix <- biblioNetwork(df_para,
+                           analysis = "co-citation",
+                           network = "references", 
+                           sep = ";")
+
+#n=35
+net=networkPlot(NetMatrix, 
+                n = 35, 
+                Title = "'Paranormal Investigation' Co-Citation Network (n=35)", 
+                type = "fruchterman",
+                size=T, 
+                remove.multiple=FALSE, 
+                labelsize=0.7,
+                edgesize = 4)
+
+#n=111
+net=networkPlot(NetMatrix, 
+                n = 111, 
+                Title = "'Paranormal Investigation' Co-Citation Network (n=111)", 
+                type = "fruchterman",
+                size=T, 
+                remove.multiple=FALSE, 
+                labelsize=0.7,
+                edgesize = 4)
+
+#keyword cocitaiton
+NetMatrix <- biblioNetwork(df_para,
+                           analysis = "co-occurrences",
+                           network = "keywords", sep = ";")
+
+net=networkPlot(NetMatrix,
+                normalize="association",
+                weighted=T,
+                n = 50, 
+                Title = "'Paranormal Investigation' Keyword Co-occurrences", 
+                type = "fruchterman", size=T,edgesize = 5,labelsize=0.7)
+
+## Create a historical citation network
+options(width=130)
+histResults <- histNetwork(df_para,
+                           min.citations = 1, 
+                           sep = ";")
+
+net <- histPlot(histResults, 
+                n=111, 
+                size = 10, 
+                labelsize=5)
