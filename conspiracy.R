@@ -5,7 +5,7 @@ library(bibliometrix)
 library(dplyr)
 biblioshiny()
 
-#loading in conspiracy data
+#loading in conspiracy bibtex files
 con1 <- "data/conspiracy_1.bib"
 con2 <- "data/conspiracy_2.bib"
 con3 <- "data/conspiracy_3.bib"
@@ -21,9 +21,8 @@ con12 <- "data/conspiracy_12.bib"
 con13 <- "data/conspiracy_13.bib"
 con14 <- "data/conspiracy_14.bib"
 
-#
 
-#create data frames
+#create data frames from bibtex files
 df_con1 <- convert2df(file = con1,
                       dbsource = "wos",
                       format = "bibtex")
@@ -67,6 +66,7 @@ df_con14 <- convert2df(file = con14,
                       dbsource = "wos",
                       format = "bibtex")
 
+#combine conspiracy data 
 M <- bind_rows(
   df_con1,
   df_con2,
@@ -84,14 +84,13 @@ M <- bind_rows(
   df_con14,
 )
 
-
-#writing data
+#write new data files for combined data
 write_rds(M, "data/cons_comb.rds")
 library(bib2df)
 df2bib(M, "data/cons_comb.bib")
 write_csv(M, "data/cons_comb.csv")
 
-# run a stock analysis and generate summary
+# run a stock analysis and generate summary 
 results <- biblioAnalysis(M, sep = ";")
 options(width=100)
 S <- summary(object = results, k = 10, pause = FALSE)
@@ -108,11 +107,11 @@ CR <- localCitations(M, sep = ";")
 CR$Authors[1:5, ]
 CR$Papers[1:5,]
 
+#Perform and plot co-citation network analysis - adjust "n=" and title values as needed 
+###DOES NOT WORK IN R, move to biblioshiny() app###
 NetMatrix <- biblioNetwork(M, analysis = "co-citation", network = "references", sep = ";")
-
-## Plot the network
 net=networkPlot(NetMatrix,
-                n = 25, 
+                n = 35, 
                 Title = "Co-Citation Network", 
                 type = "fruchterman", 
                 size=T,
